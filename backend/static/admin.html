@@ -5,72 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BookIt Demo - Admin Tool</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background-color: #f4f4f4;
-    }
-    h2 {
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input {
-      padding: 8px;
-      width: 300px;
-      margin-top: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #result {
-      margin-top: 30px;
-      font-weight: bold;
-    }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .form-container {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  input {
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #result {
+    margin-top: 30px;
+    font-weight: bold;
+    text-align: center;
+  }
   </style>
 </head>
 <body>
-  <h2>📲 BookIt Demo – Send Secure Reschedule Link</h2>
-  <form id="sendForm" enctype="multipart/form-data">
-    <label>Patient Name:
+  <div class="form-container">
+    <h2>📲 Naveon Bookit Demo – Send Secure Reschedule Link</h2>
+    <form id="sendForm" enctype="multipart/form-data">
+      <label for="name">Patient Name:</label>
       <input type="text" id="name" required />
-    </label>
-    <label>Provider Name:
-      <input type="text" id="provider_name" value="Jane Roberts, FNP" />
-    </label>
-    <label>Phone Number:
-      <input type="text" id="phone" required />
-    </label>
-    <label>Missed Appt Date:
-      <input type="date" id="missed_date" required />
-    </label>
-    <label>Missed Appt Time:
-      <input type="time" id="missed_clock" required />
-    </label>
-    <label>Facility Name:
-      <input type="text" id="facility_name" />
-    </label>
-    <label>Facility Logo:
-      <input type="file" id="facility_logo" accept="image/*" />
-    </label>
-    <button type="submit">Send Message</button>
-  </form>
 
-  <div id="result"></div>
+      <label for="provider_name">Provider Name:</label>
+      <input type="text" id="provider_name" value="Jane Roberts, FNP" />
+
+      <label for="phone">Phone Number:</label>
+      <input type="text" id="phone" required />
+
+      <label for="missed_date">Missed Appt Date:</label>
+      <input type="date" id="missed_date" required />
+
+      <label for="missed_clock">Missed Appt Time:</label>
+      <input type="time" id="missed_clock" required />
+
+      <label for="facility_name">Facility Name:</label>
+      <input type="text" id="facility_name" />
+
+      <label for="facility_logo">Facility Logo:</label>
+      <input type="file" id="facility_logo" accept="image/*" />
+
+      <button type="submit">Send Message</button>
+    </form>
+    <div id="result"></div>
+  </div>
 
   <script>
     document.getElementById("sendForm").addEventListener("submit", function (e) {
