@@ -94,7 +94,8 @@ def send_initial_message():
         f"Reply 1 to reschedule \n"
         f"or \n"
         f"2 to have the office call you.\n\n"
-        f"Thank you, {facility_name}"
+        f"Thank you, {facility_name}\n\n"
+        f"Reply STOP to request no further messages. Reply HELP for info. Msg & data rates may apply. Preferences managed by your provider."
     )
 
     try:
