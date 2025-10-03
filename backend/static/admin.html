@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookIt Demo - Admin Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f4;
+    }
+    h2 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input {
+      padding: 8px;
+      width: 300px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>📲 BookIt Demo – Send Secure Reschedule Link</h2>
+  <form id="sendForm" enctype="multipart/form-data">
+    <label>Patient Name:
+      <input type="text" id="name" required />
+    </label>
+    <label>Provider Name:
+      <input type="text" id="provider_name" value="Jane Roberts, FNP" />
+    </label>
+    <label>Phone Number:
+      <input type="text" id="phone" required />
+    </label>
+    <label>Missed Appt Date:
+      <input type="date" id="missed_date" required />
+    </label>
+    <label>Missed Appt Time:
+      <input type="time" id="missed_clock" required />
+    </label>
+    <label>Facility Name:
+      <input type="text" id="facility_name" />
+    </label>
+    <label>Facility Logo:
+      <input type="file" id="facility_logo" accept="image/*" />
+    </label>
+    <button type="submit">Send Message</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById("sendForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const provider_name = document.getElementById("provider_name").value;
+      const phone = document.getElementById("phone").value;
+      const missed_date = document.getElementById("missed_date").value;
+      const missed_clock = document.getElementById("missed_clock").value;
+      const formattedDateTime = new Date(`${missed_date}T${missed_clock}`);
+      const missed_time = formattedDateTime.toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("provider_name", provider_name);
+      formData.append("phone", phone);
+      formData.append("missed_time", missed_time);
+      formData.append("facility_name", document.getElementById("facility_name").value);
+      formData.append("facility_logo", document.getElementById("facility_logo").files[0]);
+
+      fetch("/send-initial-message", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          const link = `http://127.0.0.1:5000/choose-time/${data.token}`;
+          document.getElementById("result").innerHTML = `
+            ✅ Secure link generated:<br>
+            <a href="${link}" target="_blank">${link}</a>
+          `;
+        } else {
+          document.getElementById("result").innerText = "Something went wrong.";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

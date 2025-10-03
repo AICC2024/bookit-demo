@@ -1,0 +1,209 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .chat-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .chat-message {
+      background-color: #e8f0fe;
+      border-radius: 8px;
+      padding: 15px;
+      font-size: 16px;
+      white-space: pre-line;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    #branding {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    #facility-logo {
+      max-height: 50px;
+      display: none;
+      margin-bottom: 10px;
+    }
+
+    #facility-name {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #current-time {
+      font-size: 12px;
+      color: #888;
+      align-self: flex-end;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    @media screen and (max-width: 600px) {
+      .chat-container {
+        margin: 10px;
+        padding: 15px;
+      }
+
+      .chat-message {
+        font-size: 15px;
+      }
+
+      input[type="text"] {
+        font-size: 16px;
+      }
+
+      button {
+        width: 100%;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div id="branding">
+      <img id="facility-logo" src="" alt="Facility Logo" />
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <h1 id="facility-name" style="margin: 0;"></h1>
+        <div id="current-time" style="font-weight: normal; font-size: 14px;"></div>
+      </div>
+    </div>
+
+    <div class="chat-message" id="reschedule-message"></div>
+
+    <input type="text" id="timeChoice" placeholder="Enter 1, 2, or 3" />
+    <button onclick="selectTime(document.getElementById('timeChoice').value)">Submit</button>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    let opt1 = '';
+    let opt2 = '';
+    let opt3 = 'a time to be suggested';
+    let alreadyOfferedNewOptions = false;
+
+fetch(`/get-branding/${token}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log("Branding data received:", data);
+        const nameEl = document.getElementById('facility-name');
+        const logoEl = document.getElementById('facility-logo');
+
+        if (data.facility_name) {
+          nameEl.innerText = data.facility_name;
+        }
+
+        if (data.logo_url) {
+          const updatedLogoUrl = data.logo_url.replace('127.0.0.1:5000', window.location.host);
+          logoEl.src = updatedLogoUrl;
+          logoEl.style.display = 'block';
+        }
+
+        if (data.missed_time && data.provider_name && data.option1 && data.option2) {
+          document.getElementById('reschedule-message').innerText = 
+`You missed your appointment with ${data.provider_name}, scheduled for ${data.missed_time}.
+
+Here are the available times to reschedule:
+
+1. ${data.option1}
+2. ${data.option2}
+3. None of the above - please suggest another time.
+
+Reply with '1', '2', or '3' to select an option.`;
+          opt1 = data.option1;
+          opt2 = data.option2;
+        }
+      })
+      .catch(err => console.error("Error fetching branding:", err));
+
+    document.getElementById('current-time').innerText = new Date().toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    function selectTime(time) {
+      fetch('/confirm-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, time })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const statusEl = document.getElementById('status');
+        if (data.message) {
+          let chosenOption;
+          if (time === '1') {
+            chosenOption = opt1;
+          } else if (time === '2') {
+            chosenOption = opt2;
+          } else if (time === '3') {
+            if (!alreadyOfferedNewOptions && data.newOptions) {
+              alreadyOfferedNewOptions = true;
+              opt1 = data.newOptions[0];
+              opt2 = data.newOptions[1];
+              document.getElementById('reschedule-message').innerText =
+`Here are new available times to reschedule:\n
+1. ${opt1}
+2. ${opt2}
+3. None of the above - please have the office contact me.\n
+Reply with '1', '2', or '3' to select an option.`;
+              return;
+            } else {
+              statusEl.innerText = "📞 A member of our team will call you soon, or feel free to call us now at 615–867-5309.";
+              return;
+            }
+          } else {
+            chosenOption = 'a time to be suggested';
+          }
+          statusEl.innerText = `✅ Your appointment has been confirmed for ${chosenOption}.`;
+        } else {
+          statusEl.innerText = `❌ ${data.error}`;
+        }
+      });
+    }
+  </script>
+</body>
