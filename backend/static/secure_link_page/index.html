@@ -148,7 +148,8 @@ Here are the available times to reschedule:
 2. ${data.option2}
 3. None of the above - please suggest another time.
 
-Reply with '1', '2', or '3' to select an option.`;
+Reply with '1', '2', or '3' to select an option.
+Reply STOP to request no further messages. Reply HELP for info. Msg & data rates may apply. Preferences managed by your provider.`;
           opt1 = data.option1;
           opt2 = data.option2;
         }
@@ -186,11 +187,14 @@ Reply with '1', '2', or '3' to select an option.`;
               opt1 = data.newOptions[0];
               opt2 = data.newOptions[1];
               document.getElementById('reschedule-message').innerText =
-`Here are new available times to reschedule:\n
+`Here are new available times to reschedule:
+
 1. ${opt1}
 2. ${opt2}
-3. None of the above - please have the office contact me.\n
-Reply with '1', '2', or '3' to select an option.`;
+3. None of the above - please have the office contact me.
+
+Reply with '1', '2', or '3' to select an option.
+Reply STOP to request no further messages. Reply HELP for info. Msg & data rates may apply. Preferences managed by your provider.`;
               return;
             } else {
               statusEl.innerText = "📞 A member of our team will call you soon, or feel free to call us now at 615–867-5309.";
