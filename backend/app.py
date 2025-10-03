@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, send_from_directory, send_file
+from flask import Flask, request, jsonify, redirect, send_from_directory, send_file, Response
 from flask_cors import CORS
 import uuid
 import os
@@ -6,6 +6,7 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from twilio.twiml.messaging_response import MessagingResponse
+from functools import wraps
 
 load_dotenv()
 
@@ -13,6 +14,28 @@ TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_API_KEY = os.getenv('TWILIO_API_KEY')
 TWILIO_API_SECRET = os.getenv('TWILIO_API_SECRET')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+def check_auth(username, password):
+    return username == ADMIN_USERNAME and password == ADMIN_PASSWORD
+
+def authenticate():
+    return Response(
+        "Could not verify your access.\n"
+        "You must provide valid credentials.", 401,
+        {"WWW-Authenticate": 'Basic realm="Login Required"'}
+    )
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
 
 twilio_client = Client(TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_ACCOUNT_SID)
 
@@ -24,6 +47,7 @@ CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", expose_headers
 appointments = {}
 
 @app.route('/send-initial-message', methods=['POST'])
+@requires_auth
 def send_initial_message():
     data = request.form
     phone = data['phone']
@@ -180,7 +204,6 @@ def sms_webhook():
     else:
         resp.message("Sorry, please reply with 1 to reschedule or 2 to be contacted.")
 
-    from flask import Response
     return Response(str(resp), mimetype="text/xml")
 
 
@@ -190,6 +213,7 @@ def serve_chatbot():
     return send_from_directory('static/secure_link_page', 'index.html')
 
 @app.route('/admin.html')
+@requires_auth
 def serve_admin():
     return send_from_directory('static', 'admin.html')
 
