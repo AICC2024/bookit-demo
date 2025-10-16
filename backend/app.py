@@ -91,9 +91,9 @@ def send_initial_message():
 
     message_body = (
         f"Hello {name}, you missed your appointment on {missed_time}.\n\n"
-        f"To reschedule your appointment, please reply\n"
-        f"1 to reschedule by text message\n"
-        f"2 to have the office call you\n\n"
+        f"To reschedule your appointment, please reply:\n"
+        f"1. Reschedule by text message\n"
+        f"2. Have the office call you\n\n"
         f"Thank you, {facility_name}\n\n"
         f"Reply STOP to request no further messages. Reply HELP for info. Msg & data rates may apply. Preferences managed by your provider."
     )
